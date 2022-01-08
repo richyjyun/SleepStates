@@ -6,3 +6,5 @@ Analyzing spike and LFP dynamics throughout each state.
 <p align="center">
   <img width="645" height="450" src="https://github.com/richyyun/SleepStates/blob/main/Classification.png">
 </p>
+
+A. Diagram of classification process. LFP and accelerometer signals are used to perform PCA and k-means clustering to determine different sleep states. B. Example of classification and spectra over time.
