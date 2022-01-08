@@ -4,5 +4,5 @@ Tracking intracortical signals from the motor cortex of non-human primates via a
 Analyzing spike and LFP dynamics throughout each state.  
 
 <p align="center">
-  <img width="430" height="300" src="https://github.com/richyyun/SleepStates/blob/main/Classification.png">
+  <img width="645" height="450" src="https://github.com/richyyun/SleepStates/blob/main/Classification.png">
 </p>
