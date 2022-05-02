@@ -10,4 +10,10 @@ Please see the latest manuscript for further details: https://www.biorxiv.org/co
 
 A. Diagram of classification process. LFP and accelerometer signals are used to perform PCA and k-means clustering to determine different sleep states. B. Example of classification and spectra over time.
 
+Code flowchart
+
+<p align="center">
+  <img width="651.78" height="447.63" src="https://github.com/richyyun/SleepStates/blob/main/FlowChart.png">
+</p>
+
 Tsinalis, O., Matthews, P. M., & Guo, Y. (2016). Automatic Sleep Stage Scoring Using Time-Frequency Analysis and Stacked Sparse Autoencoders. Annals of Biomedical Engineering, 44(5), 1587–1597. https://doi.org/10.1007/s10439-015-1444-y
