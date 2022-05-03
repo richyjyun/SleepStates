@@ -1,6 +1,8 @@
 # SleepStates ([bioRxiv](https://www.biorxiv.org/content/10.1101/2022.04.28.489967v1))
 
-Tracking intracortical signals from the motor cortex of non-human primates via a Utah array for 20-24 hours and classifying brain states between 1) awake and moving, 2) awake and at rest, 3) REM sleep, 4) non-REM sleep. States were classified via dimensionality reduction and clustering. I first implemented a PCA (SVD) oriented approach, but ran into the limitations of linear transformations. I then implemented a stacked sparse autoencoder (inspired by Tsinalis et al. 2016) which was more consistent compared to EOG signals and movements recorded with the Kinect and showed clear REM cycles. Once the states are classified, spike and LFP dynamics throughout each state were analyzed.  
+Tracking intracortical signals from the motor cortex of non-human primates via a Utah array for 20-24 hours and classifying brain states between 1) awake and moving, 2) awake and at rest, 3) REM sleep, 4) non-REM sleep. 
+
+States were classified via dimensionality reduction and clustering. I first implemented a PCA (SVD) oriented approach, but ran into the limitations of linear transformations. I then implemented a stacked sparse autoencoder (inspired by Tsinalis et al. 2016) with the PyTorch package which was more consistent compared to EOG signals and movements recorded with the Kinect. The autoencoder method also showed clear REM cycles. Once the states were classified, spike and LFP dynamics throughout each state were analyzed.  
 
 Please see the latest manuscript for further details: https://www.biorxiv.org/content/10.1101/2022.04.28.489967v1
 
