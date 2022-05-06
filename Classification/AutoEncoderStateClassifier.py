@@ -97,7 +97,7 @@ samples = np.size(spectra, axis=0)
 ''' Autoencoder '''
 # Define model
 r = 32
-epochs = 300  # number of epochs
+epochs = 500  # number of epochs
 Losses = np.zeros((epochs))
 Losses_weighted = np.zeros((epochs))
 avgLoss = 0 # exponentially weighted average
@@ -139,14 +139,16 @@ class autoencode(nn.Module):
         )                                       
                                                 
     def forward(self, x):                       
-        encoded = self.encoder(x)                 
-        decoded = self.decoder(encoded)           
-        return encoded, decoded    
+        encoded1 = self.encoder(x)                 
+        decoded1 = self.decoder(encoded1)    
+        encoded2 = self.encoder(decoded1)
+        decoded2 = self.decoder(encoded2)
+        return encoded2, decoded2    
     
 model = autoencode(d, r)
 model.train()
 lr = 1e-3
-l1_lambda = 1e-5
+l1_lambda = 1e-6
 optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0)
 loss_fn = nn.MSELoss(reduction='mean')
 
