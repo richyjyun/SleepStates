@@ -95,57 +95,50 @@ samples = np.size(spectra, axis=0)
 
 
 ''' Autoencoder '''
+# Define model parameters
+d = np.size(spectra,axis=1) # number of units in first layer
+r = 32                      # number of units in final layer
+n = [d, 256, 128, 64, r]    # number of units in each layer
+
 # Define model
-r = 32
-epochs = 500  # number of epochs
-Losses = np.zeros((epochs))
-Losses_weighted = np.zeros((epochs))
-avgLoss = 0 # exponentially weighted average
-beta = 0.98
-
-d = np.size(spectra,axis=1)
-
 class autoencode(nn.Module):                    
-    def __init__(self, d, r):                         
+    def __init__(self, n):                         
         super(autoencode,self).__init__()      
-        h1 = 256 # number of neurons in hidden layers    
-        h2 = 128
-        h3 = 64
-        self.encoder=nn.Sequential(             
-            nn.Linear(d, h1),
-            nn.BatchNorm1d(h1),
-            nn.ReLU(),   
-            nn.Linear(h1, h2),
-            nn.BatchNorm1d(h2),
-            nn.ReLU(),   
-            nn.Linear(h2, h3),
-            nn.BatchNorm1d(h3),
-            nn.ReLU(),   
-            nn.Linear(h3, r),
-            nn.ReLU(), 
-        )                                       
-        self.decoder=nn.Sequential(    
-            nn.Linear(r, h3),
-            nn.BatchNorm1d(h3),
-            nn.ReLU(), 
-            nn.Linear(h3, h2),
-            nn.BatchNorm1d(h2),
-            nn.ReLU(),   
-            nn.Linear(h2, h1),
-            nn.BatchNorm1d(h1),
-            nn.ReLU(),   
-            nn.Linear(h1, d),
-            nn.ReLU(),
-        )                                       
-                                                
+        
+        # Define encoder 
+        modules = [];
+        for i in range(1, len(n)-1):
+            modules.append(nn.Linear(n[i-1], n[i]))
+            modules.append(nn.BatchNorm1d(n[i]))
+            modules.append(nn.ReLU())
+        
+        modules.append(nn.Linear(n[len(n)-2], n[len(n)-1]))
+        modules.append(nn.ReLU())
+        
+        self.encoder = nn.Sequential(*modules)
+        
+        # Define decoder 
+        modules = [];
+        for i in range(len(n)-1, 1, -1):
+            modules.append(nn.Linear(n[i], n[i-1]))
+            modules.append(nn.BatchNorm1d(n[i-1]))
+            modules.append(nn.ReLU())
+        
+        modules.append(nn.Linear(n[1], n[0]))
+        modules.append(nn.ReLU())
+        
+        self.decoder = nn.Sequential(*modules)
+                                                        
     def forward(self, x):                       
+        # 2 stacks of autoencoders
         encoded1 = self.encoder(x)                 
         decoded1 = self.decoder(encoded1)    
         encoded2 = self.encoder(decoded1)
         decoded2 = self.decoder(encoded2)
         return encoded2, decoded2    
     
-model = autoencode(d, r)
+# Initialize model, optimizer, and loss function
+model = autoencode(n)
 model.train()
 lr = 1e-3
 l1_lambda = 1e-6
