@@ -111,7 +111,8 @@ class autoencode(nn.Module):
             modules.append(nn.Linear(n[i-1], n[i]))
             modules.append(nn.BatchNorm1d(n[i]))
             modules.append(nn.ReLU())
-        
+               
+        # No batch norm for last layer
         modules.append(nn.Linear(n[len(n)-2], n[len(n)-1]))
         modules.append(nn.ReLU())
         
@@ -124,6 +125,7 @@ class autoencode(nn.Module):
             modules.append(nn.BatchNorm1d(n[i-1]))
             modules.append(nn.ReLU())
         
+        # No batch norm for last layer
         modules.append(nn.Linear(n[1], n[0]))
         modules.append(nn.ReLU())
         
