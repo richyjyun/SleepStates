@@ -52,21 +52,27 @@ def majorityFilt(x, window):
     return np.squeeze(x_filt)
 
 
-''' File names and load spectra '''
+''' File names '''
+# Spectra file
 file = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/Spectra.mat'
+# Accelerometer file
 movefile = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/Movement.mat'
+# States classified with PCA
 idxfile = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/SortedIdx.mat'
+# File for saving the trained model
 modelfile = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/Autoencoder.pt'
 
+
+''' Load spectra '''
 data = loadmatfile(file)
-bins = data['bins']
-dwnfs = data['dwnfs']
-f = data['f']
-finish = data['finish']
-spectra_raw = data['spectra_raw']
-start = data['start']
+bins = data['bins']                 # Time bins, (start, end)
+dwnfs = data['dwnfs']               # Sampling rate for calculating spectra
+f = data['f']                       # Frequency at each point of spectra
+finish = data['finish']             # End time
+spectra_raw = data['spectra_raw']   # Raw spectral power density
+start = data['start']               # Start time
     
-del data
+del data                            # Delete to save space
     
 
 ''' Preprocessing '''
@@ -96,11 +102,11 @@ samples = np.size(spectra, axis=0)
 
 ''' Autoencoder '''
 # Define model parameters
-d = np.size(spectra,axis=1) # number of units in first layer
+d = np.size(spectra,axis=1) # number of input dimensions
 r = 32                      # number of units in final layer
 n = [d, 256, 128, 64, r]    # number of units in each layer
 
-# Define model
+# Define autoencoder
 class autoencode(nn.Module):                    
     def __init__(self, n):                         
         super(autoencode,self).__init__()      
@@ -109,9 +115,10 @@ class autoencode(nn.Module):
         modules = [];
         for i in range(1, len(n)-1):
             modules.append(nn.Linear(n[i-1], n[i]))
-            modules.append(nn.BatchNorm1d(n[i]))
+            if i != len(n)-1:
+                modules.append(nn.BatchNorm1d(n[i]))
             modules.append(nn.ReLU())
-               
+        
         # No batch norm for last layer
         modules.append(nn.Linear(n[len(n)-2], n[len(n)-1]))
         modules.append(nn.ReLU())
@@ -137,9 +144,9 @@ class autoencode(nn.Module):
         decoded1 = self.decoder(encoded1)    
         encoded2 = self.encoder(decoded1)
         decoded2 = self.decoder(encoded2)
-        return encoded2, decoded2    
+        return encoded2, decoded2 #, encoded1, decoded1 # For debugging  
     
-# Initialize model, optimizer, and loss function
+# Initialize model, optimizer, loss function, learning rate, and L1 weight
 model = autoencode(n)
 model.train()
 lr = 1e-3
@@ -149,9 +156,11 @@ loss_fn = nn.MSELoss(reduction='mean')
 
 
 ''' Train autoencoder with mini-batches across e epochs '''
+epochs = 500  # number of epochs
 batch = 64  # size of batch
+Losses = np.zeros((epochs)) # Keep track of losses
 loops = int(samples/batch) 
-prev_change = False
+# prev_change = False  # for debugging
 
 for e in range(epochs):
     print(e)
@@ -170,6 +179,7 @@ for e in range(epochs):
         l1_norm = sum(p.abs().sum() for p in model.parameters())
         loss += l1_lambda * l1_norm
 
+        # Gradient descent
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -180,15 +190,8 @@ for e in range(epochs):
     Losses[e] = loss.item()
     
     print(Losses[e])
-        
-    prevloss = avgLoss
-    avgLoss = (beta*prevloss + (1-beta) * loss.item())
-    Losses_weighted[e] = avgLoss / (1-beta ** (e+1))
-    change = Losses_weighted[e-1] -  Losses_weighted[e]
-
-    print(change)
     
-    # # If gains are minimal, break from training
+    # # If gains are minimal, break from training. For debugging
     # if change > 0 and change < 1e-5:
     #     if(prev_change):
     #         break
@@ -206,17 +209,16 @@ torch.save(model.state_dict(), modelfile)
 print('Saved')
 
 # # To load
-# model = autoencode(d, r)
+# model = autoencode(n)
 # model.load_state_dict(torch.load(modelfile))
 
 
 ''' Plot losses '''
 plt.figure()
 plt.plot(np.transpose(Losses))
-plt.plot(np.transpose(Losses_weighted))
 plt.ylabel('Loss')
 plt.xlabel('Epochs')
-plt.legend(('Loss', 'Exponential Average'))
+plt.legend(('Loss'))
 plt.show()
 
 
@@ -224,12 +226,17 @@ plt.show()
 [reduced, x_hat] = model(spectra)
 spectra_np = spectra.numpy()
 reconst = x_hat.detach().numpy()
-inds = np.floor(np.random.rand((6))*samples)
+inds = np.floor(np.random.rand((6)) * samples)
 inds = inds.astype(int)
 fig, axes = plt.subplots(2, 3)
 for i in range(6):
-    axes[np.floor(i/3).astype(int),np.mod(i,3)].plot(spectra_np[inds[i],:])
-    axes[np.floor(i/3).astype(int),np.mod(i,3)].plot(reconst[inds[i],:])
+    ax = axes[np.floor(i/3).astype(int),np.mod(i,3)]
+    ax.plot(f, spectra_np[inds[i],:])
+    ax.plot(f, reconst[inds[i],:])
+    if i%3 == 0:
+        ax.set(ylabel = 'Normalized Power (a.u.)')
+    if i > 2:
+        ax.set(xlabel = 'Frequency (Hz)')
 plt.show()
 
 
@@ -249,11 +256,13 @@ move = move * np.max(std)
 
 reduced_np = np.hstack([reduced_np, move.T])
 
+# Find pairwise Euclidean distance and use 90th percentile to find centroids
 dist = pairwise_distances(reduced_np)
 avgdist = np.mean(dist, axis=0)
 lim = np.percentile(avgdist, 90)
 coredata = reduced_np[avgdist<lim, :]
 
+# Classify all points with calculated centroids
 kmeans = KMeans(n_clusters=4, max_iter=1000).fit(coredata)
 labels = kmeans.predict(reduced_np)
 
@@ -293,39 +302,51 @@ for i in range(4):
     labels[prev_labels==i] = fixedlabels[i]
 
 
-''' Plot states over time '''
-fig, axes = plt.subplots(1, 2)
-x = range(samples)
-for i in range(4):
-    axes[0].scatter([i for i, x in enumerate(labels==i) if x], labels[labels==i])
-
+''' Plot states over time - Raw classification '''
+# Load PCA classification
 data = loadmatfile(idxfile)
 idx = data['idx']
 idx = idx.flatten()
 idx = idx-1
 
+# Plot
+fig, axes = plt.subplots(1, 2)
+x = range(samples)
 for i in range(4):
-    axes[1].scatter([i for i, x in enumerate(idx==i) if x], idx[idx==i])
+    axes[0].scatter(bins[0, labels==i], labels[labels == i])
+    axes[0].set(ylabel = 'State', xlabel = 'Time (s)')
+for i in range(4):
+    axes[1].scatter(bins[0, idx==i], idx[idx == i])
+    axes[1].set(xlabel = 'Time (s)')
 plt.show()
 
+# Difference from PCA 
 np.sum(labels!=idx)
 
+
+''' Plot states over time - Majority filter '''
+# Load PCA classification
 smooth_labels = majorityFilt(labels, 4)
 smoothidx = data['smoothidx']
 smoothidx = smoothidx.flatten()
 smoothidx = smoothidx-1
+
+# Plot
 fig, axes = plt.subplots(1, 2)
 x = range(samples)
 for i in range(4):
-    axes[0].scatter([i for i, x in enumerate(smooth_labels==i) if x], smooth_labels[smooth_labels==i])
+    axes[0].scatter(bins[0, smooth_labels==i], smooth_labels[smooth_labels==i])
+    axes[0].set(ylabel = 'State', xlabel = 'Time (s)')
 for i in range(4):
-    axes[1].scatter([i for i, x in enumerate(smoothidx==i) if x], smoothidx[smoothidx==i])
+    axes[1].scatter(bins[0, smoothidx==i], smoothidx[smoothidx==i])
+    axes[1].set(xlabel = 'Time (s)')
 plt.show()
 
+# Difference from PCA
 np.sum(smooth_labels!=smoothidx)
 
 
-''' Plot averaged spectra '''
+''' Plot averaged spectra for each state'''
 plt.figure()
 for i in range(4):
     plt.plot(f, np.mean(spectra_norm[:,labels==i], axis=1))
@@ -334,12 +355,8 @@ plt.show()
 
 
 ''' Maximum values for each dimension of low dimensional representation '''
+# For intuition on the classification, similar to looking at principal components
 plt.figure()
 for i in range(32):
     temp = np.argsort(reduced_np[:,i])
     plt.plot(f, np.mean(spectra_norm[:, temp[0:100]], axis=1))
-
-
-
-
-
