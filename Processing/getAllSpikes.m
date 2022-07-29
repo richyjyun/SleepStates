@@ -9,7 +9,7 @@ if(~exist(savepath)), mkdir(savepath); end
 % Packet to print data into
 user = getenv('username');
 temp = strsplit(fpath,'\');
-packet = ['C:\Users\',user,'\Dropbox\Fetz Lab\_Brain States\Packets\Spikes\',temp{end},'.ps'];
+packet = ['Spikes\',temp{end},'.ps'];
 
 %% Load bins saved from saveSpectra
 load(fullfile(fpath,'Bins.mat'))
