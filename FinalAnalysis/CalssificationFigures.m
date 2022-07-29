@@ -2,7 +2,7 @@
 % diagram showing process of classification
 % Example of LFP traces during different states
 
-path = 'R:\Yun\Kronk\Neurochip';
+path = 'Neurochip';
 day = 'Kronk_20191128_01';
 [fpath,fname,Channels,fs,session_time] = getNCData(path,day);
 
