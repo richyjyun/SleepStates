@@ -5,7 +5,7 @@ clear; close all;
 
 user = getenv('username');
 
-metafile = ['C:\Users\',user,'\Dropbox\Fetz Lab\_Brain States\Experiments.xlsx'];
+metafile = 'Experiments.xlsx';
 opts = detectImportOptions(metafile);
 metadata = readtable(metafile,opts);
 
