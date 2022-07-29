@@ -23,7 +23,7 @@ Code flowchart
 </p>
 
 ## Analyses Performed
-- Obtain the LFP power spectral density of every 8-second time bin using Welch's estimate for 0 to 50 Hz. Also calculate all pairwise magnitude-squared coherence.
+- Obtain the LFP power spectral density of every 8-second time bin using Welch's estimate for 0 to 50 Hz, as well as pairwise magnitude-squared coherence.
 - Sort spikes. 
   - I manually sorted each spike using two-window discrimination on ten minutes of data in the middle of the night then applied the determined parameters to the rest of the duration.
   - The fidelity of the spikes were calculated using the coefficient of determination (CoD) between spike waveforms. If the CoD between the first 1000 and last 1000 spikes is greater than the CoD of the first 1000 spikes with 1000 spikes from another recorded neuron, the spike was considered to have been stable overnight.
