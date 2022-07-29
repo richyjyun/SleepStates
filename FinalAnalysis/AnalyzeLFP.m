@@ -6,7 +6,7 @@ clear; close all;
 
 user = getenv('username');
 
-metafile = ['C:\Users\',user,'\Dropbox\Fetz Lab\_Brain States\Experiments.xlsx'];
+metafile = 'Experiments.xlsx';
 opts = detectImportOptions(metafile);
 metadata = readtable(metafile,opts);
 
@@ -15,7 +15,7 @@ stddev = {};
 N = [];
 Spectra = {};
 notsaved = [];
-packet = 'C:\Users\Richy Yun\Dropbox\Fetz Lab\_Brain States\Packets\Coherence.ps';
+packet = 'Coherence.ps';
 for m = 1:size(metadata,1)
     
     %% Path logistics
