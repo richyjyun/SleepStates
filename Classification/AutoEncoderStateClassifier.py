@@ -54,13 +54,13 @@ def majorityFilt(x, window):
 
 ''' File names '''
 # Spectra file
-file = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/Spectra.mat'
+file = 'Spectra.mat'
 # Accelerometer file
-movefile = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/Movement.mat'
+movefile = 'Movement.mat'
 # States classified with PCA
-idxfile = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/SortedIdx.mat'
+idxfile = 'SortedIdx.mat'
 # File for saving the trained model
-modelfile = 'R:/Yun/Kronk/Neurochip/Kronk_20191015_01/Autoencoder.pt'
+modelfile = 'Autoencoder.pt'
 
 
 ''' Load spectra '''
