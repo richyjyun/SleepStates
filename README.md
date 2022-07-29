@@ -19,7 +19,7 @@ A. Diagram of classification process. LFP and accelerometer signals are used to 
 Code flowchart
 
 <p align="center">
-  <img src="https://github.com/richyyun/SleepStates/blob/main/CodeFlowChart.png">
+  <img src="https://github.com/richyyun/SleepStates/blob/main/FlowChart.png">
 </p>
 
 ## Analyses Performed
