@@ -6,11 +6,11 @@ clear; close all;
 
 user = getenv('username');
 
-metafile = ['C:\Users\',user,'\Dropbox\Fetz Lab\_Brain States\Experiments.xlsx'];
+metafile = 'Experiments.xlsx';
 opts = detectImportOptions(metafile);
 metadata = readtable(metafile,opts);
 
-packet = ['C:\Users\',user,'\Dropbox\Fetz Lab\_Brain States\Packets\ClassifiedStates.ps'];
+packet = 'ClassifiedStates.ps';
 
 %% For each experiment
 for m = 1:size(metadata,1)
